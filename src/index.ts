@@ -57,11 +57,11 @@ const orderStore = new Map<string, Order>();
 const fastify = Fastify({ 
   logger: {
     level: 'info',
-    serializers: {
+      serializers: {
       res(reply: any) {
         return {
           statusCode: reply?.statusCode,
-          responseTime: reply?.getResponseTime?.()
+          responseTime: reply?.elapsedTime
         };
       },
       req(request) {
@@ -325,7 +325,14 @@ const cleanup = async () => {
 
   // Redis cleanup
   try {
-    await redis.quit();
+    // Force disconnect if quit fails
+    await Promise.race([
+      redis.quit(),
+      new Promise(resolve => setTimeout(resolve, 1000))
+    ]);
+    if (redis.status !== 'end') {
+      redis.disconnect();
+    }
   } catch (err) {
     errors.push(['Redis', err]);
   }

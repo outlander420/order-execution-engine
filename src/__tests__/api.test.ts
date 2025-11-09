@@ -70,10 +70,10 @@ const createServer = () => {
         res(reply: any) {
           return {
             statusCode: reply?.statusCode,
-            responseTime: reply?.getResponseTime?.()
+            responseTime: reply?.elapsedTime
           };
         },
-        req(request) {
+        req(request: any) {
           return {
             method: request.method,
             url: request.url,
